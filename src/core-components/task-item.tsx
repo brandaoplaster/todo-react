@@ -18,36 +18,40 @@ interface TaskItemProps {
 }
 
 export default function TaskItem({ task }: TaskItemProps) {
-  const [taskTitle, setTaskTitle] = React.useState(task?.title || "");
-  const { updateTask, updateTaskStatus, deleteTask } = useTasks();
   const [isEditing, setIsEditing] = React.useState(
     task?.state === TaskState.Creating
   );
+  const [taskTitle, setTaskTitle] = React.useState(task.title || "");
+  const { updateTask, updateTaskStatus, deleteTask } = useTasks();
 
   function handleEditTask() {
     setIsEditing(true);
-  }
-
-  function handleExitEditTask() {
-    if (task?.state === TaskState.Creating) {
-      deleteTask(task.id);
-    }
-    setIsEditing(false);
   }
 
   function handleChangeTaskTitle(e: React.ChangeEvent<HTMLInputElement>) {
     setTaskTitle(e.target.value || "");
   }
 
-  function handleSaveTask(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    updateTask(task.id, { title: taskTitle });
+  function handleExitEditTask() {
+    if (task.state === TaskState.Creating) {
+      deleteTask(task.id);
+    }
+
     setIsEditing(false);
   }
 
-  function handleChangeStatus(e: React.ChangeEvent<HTMLInputElement>) {
-    const concluded = e.target.checked;
-    updateTaskStatus(task.id, concluded);
+  function handleSaveTask(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    updateTask(task.id, { title: taskTitle });
+
+    setIsEditing(false);
+  }
+
+  function handleChangeTaskStatus(e: React.ChangeEvent<HTMLInputElement>) {
+    const checked = e.target.checked;
+
+    updateTaskStatus(task.id, checked);
   }
 
   function handleDeleteTask() {
@@ -60,7 +64,7 @@ export default function TaskItem({ task }: TaskItemProps) {
         <div className="flex items-center gap-4">
           <InputCheckbox
             checked={task.concluded}
-            onChange={handleChangeStatus}
+            onChange={handleChangeTaskStatus}
           />
           <Text className={cx("flex-1", { "line-through": task?.concluded })}>
             {task?.title}
