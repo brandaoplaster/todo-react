@@ -40,6 +40,10 @@ export default function useTasks() {
     );
   }
 
+  function deleteTask(id: string) {
+    setTasks(tasks.filter((task) => task.id !== id));
+  }
+
   return {
     tasks,
     tasksCount: getTasksCount(tasks),
@@ -47,5 +51,6 @@ export default function useTasks() {
     prepareTask,
     updateTask,
     updateTaskStatus,
+    deleteTask,
   };
 }
