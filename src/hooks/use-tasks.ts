@@ -1,9 +1,9 @@
 import useLocalStorage from "use-local-storage";
 import type { Task } from "../types/task";
-import { TASKS_KEY } from "../types/task";
+import { TASKS_KEY, TaskState } from "../types/task";
 
 export default function useTasks() {
-  const [tasks] = useLocalStorage<Task[]>(TASKS_KEY, []);
+  const [tasks, setTasks] = useLocalStorage<Task[]>(TASKS_KEY, []);
 
   function getTasksCount(tasks: Task[]) {
     return tasks.length;
@@ -13,9 +13,21 @@ export default function useTasks() {
     return tasks.filter((t) => t.concluded).length;
   }
 
+  function prepareTask() {
+    setTasks([
+      ...tasks,
+      {
+        id: Math.random().toString(36).substring(2, 9),
+        title: "",
+        state: TaskState.Creating,
+      },
+    ]);
+  }
+
   return {
     tasks,
     tasksCount: getTasksCount(tasks),
     concludedTasksCount: getConcludedTasksCount(tasks),
+    prepareTask,
   };
 }
