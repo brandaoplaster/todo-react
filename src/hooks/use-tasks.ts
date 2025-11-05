@@ -1,56 +1,31 @@
+import React from "react";
 import useLocalStorage from "use-local-storage";
-import type { Task } from "../types/task";
-import { TASKS_KEY, TaskState } from "../types/task";
+import { Task, TASKS_KEY, TaskState } from "../types/task";
+import { delay } from "../helpers/helpers";
 
 export default function useTasks() {
-  const [tasks, setTasks] = useLocalStorage<Task[]>(TASKS_KEY, []);
+  const [tasksData] = useLocalStorage<Task[]>(TASKS_KEY, []);
+  const [tasks, setTasks] = React.useState<Task[]>([]);
+  const [isLoadingTasks, setIsLoadingTasks] = React.useState(true);
 
-  function getTasksCount(tasks: Task[]) {
-    return tasks.length;
+  async function fetchTasks() {
+    if (isLoadingTasks) {
+      await delay(2000);
+      setIsLoadingTasks(false);
+    }
+
+    setTasks(tasksData);
   }
 
-  function getConcludedTasksCount(tasks: Task[]) {
-    return tasks.filter((t) => t.concluded).length;
-  }
-
-  function prepareTask() {
-    setTasks([
-      ...tasks,
-      {
-        id: Math.random().toString(36).substring(2, 9),
-        title: "",
-        state: TaskState.Creating,
-      },
-    ]);
-  }
-
-  function updateTask(id: string, payload: { title: Task["title"] }) {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id
-          ? { ...task, state: TaskState.Created, ...payload }
-          : task
-      )
-    );
-  }
-
-  function updateTaskStatus(id: string, concluded: boolean) {
-    setTasks(
-      tasks.map((task) => (task.id === id ? { ...task, concluded } : task))
-    );
-  }
-
-  function deleteTask(id: string) {
-    setTasks(tasks.filter((task) => task.id !== id));
-  }
+  React.useEffect(() => {
+    fetchTasks();
+  }, [tasksData]);
 
   return {
     tasks,
-    tasksCount: getTasksCount(tasks),
-    concludedTasksCount: getConcludedTasksCount(tasks),
-    prepareTask,
-    updateTask,
-    updateTaskStatus,
-    deleteTask,
+    createdTasksCount: tasks.filter((task) => task.state === TaskState.Created)
+      .length,
+    concludedTasksCount: tasks.filter((task) => task.concluded).length,
+    isLoadingTasks,
   };
 }
